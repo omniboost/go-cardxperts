@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/omniboost/go-cardxperts/utils"
 	"github.com/pkg/errors"
@@ -167,6 +168,17 @@ func (r *MeldedatenRequest) Do() (MeldedatenRequestResponseBody, error) {
 
 	if responseBody.Error.Fehlertext != "" {
 		return *responseBody, errors.New(responseBody.Error.Fehlertext)
+	}
+
+	// check for error/fehler in description
+	if strings.Contains(
+		strings.ToLower(responseBody.NewDataSet.Return.Description),
+		"error",
+	) || strings.Contains(
+		strings.ToLower(responseBody.NewDataSet.Return.Description),
+		"fehler",
+	) {
+		return *responseBody, errors.New(responseBody.NewDataSet.Return.Description)
 	}
 
 	return *responseBody, nil
